@@ -51,7 +51,7 @@ def create_ico(output: str = "icon.ico") -> None:
         append_images=frames[1:],
         sizes=[(s, s) for s in sizes],
     )
-    print(f"icon.ico 已生成 → {output}")
+    print(f"icon.ico generated -> {output}")
 
 
 if __name__ == "__main__":
