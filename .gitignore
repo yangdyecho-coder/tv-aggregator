@@ -1,0 +1,21 @@
+# PyInstaller
+dist/
+build/
+__pycache__/
+*.pyc
+*.pyo
+*.spec.bak
+
+# Inno Setup output
+Output/
+
+# Generated files
+icon.ico
+*.egg-info/
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/

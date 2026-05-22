@@ -1,0 +1,68 @@
+name: Build Windows Installer
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:          # Allow manual trigger from GitHub UI
+
+jobs:
+  build-windows:
+    name: Build on Windows
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Python dependencies
+        run: pip install pyinstaller requests Pillow
+
+      - name: Generate application icon
+        run: python create_icon.py
+
+      - name: Build executable (PyInstaller)
+        run: pyinstaller build.spec --clean --noconfirm
+
+      - name: Verify exe was built
+        run: |
+          if (!(Test-Path "dist\TVAggregator.exe")) {
+            Write-Error "TVAggregator.exe not found in dist\"
+            exit 1
+          }
+          $size = (Get-Item "dist\TVAggregator.exe").length / 1MB
+          Write-Host "dist\TVAggregator.exe — $([math]::Round($size,1)) MB"
+        shell: powershell
+
+      - name: Install Inno Setup 6
+        run: choco install innosetup --yes --no-progress
+
+      - name: Build installer (Inno Setup)
+        run: |
+          New-Item -ItemType Directory -Force -Path Output | Out-Null
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        shell: powershell
+
+      - name: List output
+        run: Get-ChildItem Output\ | Format-Table Name, Length
+        shell: powershell
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TVAggregator-Windows-Installer
+          path: Output\TVAggregator_Setup_v1.0.0.exe
+          retention-days: 30
+
+      - name: Upload standalone exe (fallback)
+        uses: actions/upload-artifact@v4
+        with:
+          name: TVAggregator-exe-only
+          path: dist\TVAggregator.exe
+          retention-days: 30
