@@ -38,7 +38,7 @@ jobs:
             exit 1
           }
           $size = (Get-Item "dist\TVAggregator.exe").length / 1MB
-          Write-Host "dist\TVAggregator.exe — $([math]::Round($size,1)) MB"
+          Write-Host ("dist\TVAggregator.exe - " + [math]::Round($size,1) + " MB")
         shell: powershell
 
       - name: Install Inno Setup 6
